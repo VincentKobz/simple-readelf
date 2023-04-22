@@ -7,9 +7,11 @@
 #include <stdarg.h>
 #include "readelf.h"
 
+// Useful macro
 #define INDENT "  "
-#define NB_INDENT 50
+#define NB_INDENT 30
 
+// Find correct name parameter in xlat
 const char *xlat_get(struct xlat *xlat_arr, size_t val)
 {
     for (; xlat_arr->string; xlat_arr++)
@@ -20,6 +22,7 @@ const char *xlat_get(struct xlat *xlat_arr, size_t val)
     return NULL;
 }
 
+// Pretty print for magic number
 void pretty_print_magic(unsigned char *string)
 {
     for (size_t i = 0; i < EI_NIDENT; i++)
@@ -29,7 +32,7 @@ void pretty_print_magic(unsigned char *string)
     puts("");
 }
 
-// pretty print for elf head for data encoding
+// Pretty print for elf head for data encoding
 static char *pretty_print_header_data(int data)
 {
     if (data == ELFDATA2LSB)
@@ -71,6 +74,7 @@ static char *pretty_print_header_type(int type)
     }
 }
 
+// Pretty print header indent
 static void printer_indent(const char *title, const char *format, ...)
 {
     char string[128] = {0};
@@ -82,16 +86,22 @@ static void printer_indent(const char *title, const char *format, ...)
     {
         putchar(' ');
     }
+
     vsprintf(string, format, args);
     puts(string);
 }
 
+// Pretty print ELF header
 void prettry_print_header(ElfW(Ehdr) *header)
 {
-    // Pretty print header
+    // Header title
     puts("ELF Header:");
+
+    // Magic print
     printf(INDENT "Magic: ");
     pretty_print_magic(header->e_ident);
+
+    // Header info
     printer_indent("Data:", "%s", pretty_print_header_data(header->e_ident[EI_DATA]));
     printer_indent("Version:", "%d (current)", header->e_ident[EI_VERSION]);
     printer_indent("OS/ABI:", "%s", pretty_print_header_osabi(header->e_ident[EI_OSABI]));
@@ -111,6 +121,7 @@ void prettry_print_header(ElfW(Ehdr) *header)
     printer_indent("Section header string table index:", "%d", header->e_shstrndx);
 }
 
+// Process input file
 char *open_wrapper(char *filename)
 {
     size_t buffer_size = 1000;
@@ -144,6 +155,7 @@ char *open_wrapper(char *filename)
     return buffer;
 }
 
+// Main function
 int main(int argc, char **argv)
 {
     // Check function number of argument
