@@ -6,13 +6,11 @@
 #include <err.h>
 #include <stdarg.h>
 #include "readelf.h"
+#include "tools.h"
 
-// Useful macro
-#define INDENT "  "
-#define NB_INDENT 30
 
 // Find correct name parameter in xlat
-const char *xlat_get(struct xlat *xlat_arr, size_t val)
+const char *xlat_get(xlat *xlat_arr, size_t val)
 {
     for (; xlat_arr->string; xlat_arr++)
     {
@@ -74,6 +72,67 @@ static char *pretty_print_header_type(int type)
     }
 }
 
+// Return the correct char that corresponds to the flag
+static char *flag_selector(uint64_t flag)
+{
+    char *res = calloc(17, sizeof(char));
+
+    if (!res)
+    {
+        err(1, "Error during calloc !");
+    }
+
+    size_t index = 0;
+
+    for (size_t i = 0; i < 16; i++)
+    {
+        uint64_t mask = 1 << i;
+        uint64_t flag_mask = flag & mask;
+        switch(flag_mask)
+        {
+            case SHF_WRITE:
+                res[index++] = 'W';
+                break;
+            case SHF_ALLOC:
+                res[index++] = 'A';
+                break;
+            case SHF_EXECINSTR:
+                res[index++] = 'X';
+                break;
+            case SHF_MERGE:
+                res[index++] = 'M';
+                break;
+            case SHF_STRINGS:
+                res[index++] = 'S';
+                break;
+            case SHF_INFO_LINK:
+                res[index++] = 'I';
+                break;
+            case SHF_LINK_ORDER:
+                res[index++] = 'L';
+                break;
+            case SHF_OS_NONCONFORMING:
+                res[index++] = 'O';
+                break;
+            case SHF_GROUP:
+                res[index++] = 'G';
+                break;
+            case SHF_TLS:
+                res[index++] = 'T';
+                break;
+            case SHF_EXCLUDE:
+                res[index++] = 'E';
+                break;
+            case SHF_COMPRESSED:
+                res[index++] = 'C';
+                break;
+            default:
+                break;
+        }
+    }
+    return res;
+}
+
 // Pretty print header indent
 static void printer_indent(const char *title, const char *format, ...)
 {
@@ -81,18 +140,15 @@ static void printer_indent(const char *title, const char *format, ...)
     va_list args;
     va_start(args, format);
 
-    printf(INDENT "%s", title);
-    for (size_t i = strlen(title); i < NB_INDENT; i++)
-    {
-        putchar(' ');
-    }
+    printf(INDENT);
+    auto_pad(title, NB_INDENT);
 
     vsprintf(string, format, args);
     puts(string);
 }
 
 // Pretty print ELF header
-void prettry_print_header(ElfW(Ehdr) *header)
+void pretty_print_header(ElfW(Ehdr) *header)
 {
     // Header title
     puts("ELF Header:");
@@ -121,6 +177,48 @@ void prettry_print_header(ElfW(Ehdr) *header)
     printer_indent("Section header string table index:", "%d", header->e_shstrndx);
 }
 
+void pretty_print_section_header(ElfW(Shdr) *section, size_t number, section_info *section_info)
+{
+    if (str_sections_name == NULL)
+    {
+        err(1, "Cannot get sections names !");
+    }
+
+    puts("Sections Headers:");
+    for (size_t i = 0; i < 10; i++)
+    {
+        auto_pad(section_attribute[i], SECTION_PAD);
+    }
+    putchar('\n');
+
+    for (size_t i = 0; i < number; i++)
+    {
+        char *name = &str_sections_name[section[i].sh_name];
+        if (section[i].sh_type == SHT_SYMTAB)
+        {
+            section_info->symbol = &section[i];
+        }
+        else if (section[i].sh_type == SHT_DYNSYM)
+        {
+            section_info->dynamic_symbol = &section[i];
+        }
+        auto_pad(name, SECTION_PAD);
+        auto_pad(xlat_get(sh_type, section[i].sh_type), SECTION_PAD);
+        auto_pad_number((int)section[i].sh_addr, SECTION_PAD);
+        auto_pad_number((int)section[i].sh_offset, SECTION_PAD);
+        auto_pad_number((int)section[i].sh_size, SECTION_PAD);
+        auto_pad_number((int)section[i].sh_entsize, SECTION_PAD);
+        char *flag = flag_selector(section[i].sh_flags);
+        auto_pad(flag, SECTION_PAD);
+        auto_pad_number((int)section[i].sh_link, SECTION_PAD);
+        auto_pad_number((int)section[i].sh_info, SECTION_PAD);
+        auto_pad_number((int)section[i].sh_addralign, SECTION_PAD);
+
+        free(flag);
+        putchar('\n');
+    }
+}
+
 // Process input file
 char *open_wrapper(char *filename)
 {
@@ -141,12 +239,15 @@ char *open_wrapper(char *filename)
         if (counter == buffer_size - 1)
         {
             buffer_size *= 2;
-            buffer = realloc(buffer, buffer_size);
+            char* new_buffer = realloc(buffer, buffer_size);
 
-            if (!buffer)
+            if (!new_buffer)
+            {
+                free(buffer);
                 err(1, "Cannot realloc buffer !");
+            }
+            buffer = new_buffer;
         }
-
         buffer[counter++] = (char) fgetc(file);
 
         if (feof(file))
@@ -170,17 +271,21 @@ int main(int argc, char **argv)
 
     // Get the elf header with the buffer address
     ElfW(Ehdr) *elf_header = (ElfW(Ehdr) *)buffer;
+    // Get sections header with the buffer address
+    ElfW(Shdr) *sections_header = (ElfW(Shdr *))(buffer + elf_header->e_shoff);
+    // Get the section that hosts the section header names
+    ElfW(Shdr) str_section_name_s = sections_header[elf_header->e_shstrndx];
 
-    // Define symbole table offset
-    // ElfW(Shdr) *sym_s = NULL;
-    // ElfW(Shdr) *dyn_sym_s = NULL;
+    size_t nb_sections = elf_header->e_shnum;
+    section_info s_info;
 
-    // String tables offset
-    // size_t str_dyn_offset = 0;
-    // size_t str_offset = 0;
+    // Assign global variable for sections header names
+    str_sections_name = buffer + str_section_name_s.sh_offset;
 
-    // Prettry print header
-    prettry_print_header(elf_header);
+    // Pretty print header
+    pretty_print_header(elf_header);
+    putchar('\n');
+    pretty_print_section_header(sections_header, nb_sections, &s_info);
     free(buffer);
 
     return 0;
