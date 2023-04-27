@@ -1,7 +1,7 @@
 CC=gcc
 CFLAGS= -Wall -std=c99 -pedantic -Wextra -Werror -fsanitize=address -g
 
-OBJS=readelf.o
+OBJS=readelf.o tools.o
 TARGET=simple-readelf
 
 all: $(TARGET)
