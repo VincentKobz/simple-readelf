@@ -68,6 +68,7 @@ xlat sh_type[] = {
         XLAT(SHT_GNU_HASH),
         XLAT(SHT_GNU_versym),
         XLAT(SHT_GNU_verneed),
+        XLAT(SHT_PREINIT_ARRAY),
         XLAT(SHT_INIT_ARRAY),
         XLAT(SHT_FINI_ARRAY),
         XLAT_END
