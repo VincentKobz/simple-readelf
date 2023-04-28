@@ -73,7 +73,7 @@ static char *pretty_print_header_type(int type)
 }
 
 // Return the correct char that corresponds to the flag
-static char *flag_selector(uint64_t flag)
+static char *section_flag_selector(uint64_t flag)
 {
     char *res = calloc(17, sizeof(char));
 
@@ -211,6 +211,7 @@ void pretty_print_header(ElfW(Ehdr) *header)
     printer_indent("Section header string table index:", "%d", header->e_shstrndx);
 }
 
+// Pretty print for sections headers
 void pretty_print_section_header(ElfW(Shdr) *section, size_t number, section_info *section_info)
 {
     if (str_sections_name == NULL)
@@ -242,7 +243,7 @@ void pretty_print_section_header(ElfW(Shdr) *section, size_t number, section_inf
         auto_pad_number((int)section[i].sh_offset, "%x", SECTION_PAD, 1);
         auto_pad_number((int)section[i].sh_size, "%x", SECTION_PAD, 1);
         auto_pad_number((int)section[i].sh_entsize, "%x", SECTION_PAD, 1);
-        char *flag = flag_selector(section[i].sh_flags);
+        char *flag = section_flag_selector(section[i].sh_flags);
         auto_pad(flag, SECTION_PAD);
         auto_pad_number((int)section[i].sh_link, "%d", SECTION_PAD, 0);
         auto_pad_number((int)section[i].sh_info, "%d", SECTION_PAD, 0);
@@ -251,7 +252,7 @@ void pretty_print_section_header(ElfW(Shdr) *section, size_t number, section_inf
         free(flag);
         putchar('\n');
     }
-    puts(flag_keyword_infos);
+    puts(flag_section_keyword_infos);
 }
 
 // Pretty print for program headers
