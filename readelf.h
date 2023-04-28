@@ -10,9 +10,10 @@
 #define NB_INDENT 35
 #define SECTION_PAD 18
 
-// Functions declaration
+// Global variables declaration
 char *str_sections_name = NULL;
-const char *section_attribute[10] = {"Name", "Type", "Address", "Offset", "Size", "EntSize", "Flags", "Links", "Info", "Align"};
+static const char *section_attribute[10] = {"Name", "Type", "Address", "Offset", "Size", "EntSize", "Flags", "Links", "Info", "Align"};
+static const char *flag_keyword_infos = "\nKey to FLAGS:\nW [Write] - A [Alloc] - X [Execute] - M [Merge]\nS [Strings] - I [Infos] - L [Link order]\nO [Extra OS processing required] - G [Group]\nT [TLS] - E [Exclude] - C [Compressed]";
 
 // Structures declaration
 typedef struct {
@@ -70,21 +71,6 @@ xlat sh_type[] = {
         XLAT(SHT_INIT_ARRAY),
         XLAT(SHT_FINI_ARRAY),
         XLAT_END
-};
-
-xlat sh_flags[] = {
-        XLAT(SHF_WRITE),
-        XLAT(SHF_ALLOC),
-        XLAT(SHF_EXECINSTR),
-        XLAT(SHF_MERGE),
-        XLAT(SHF_STRINGS),
-        XLAT(SHF_INFO_LINK),
-        XLAT(SHF_LINK_ORDER),
-        XLAT(SHF_OS_NONCONFORMING),
-        XLAT(SHF_GROUP),
-        XLAT(SHF_TLS),
-        XLAT(SHF_EXCLUDE),
-        XLAT(SHF_COMPRESSED),
 };
 
 #endif //READELF_H

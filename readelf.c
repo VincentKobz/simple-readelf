@@ -217,6 +217,7 @@ void pretty_print_section_header(ElfW(Shdr) *section, size_t number, section_inf
         free(flag);
         putchar('\n');
     }
+    puts(flag_keyword_infos);
 }
 
 // Process input file
