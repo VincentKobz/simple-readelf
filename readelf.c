@@ -204,15 +204,15 @@ void pretty_print_section_header(ElfW(Shdr) *section, size_t number, section_inf
         }
         auto_pad(name, SECTION_PAD);
         auto_pad(xlat_get(sh_type, section[i].sh_type), SECTION_PAD);
-        auto_pad_number((int)section[i].sh_addr, SECTION_PAD);
-        auto_pad_number((int)section[i].sh_offset, SECTION_PAD);
-        auto_pad_number((int)section[i].sh_size, SECTION_PAD);
-        auto_pad_number((int)section[i].sh_entsize, SECTION_PAD);
+        auto_pad_number((int)section[i].sh_addr, "%x", SECTION_PAD, 1);
+        auto_pad_number((int)section[i].sh_offset, "%x", SECTION_PAD, 1);
+        auto_pad_number((int)section[i].sh_size, "%x", SECTION_PAD, 1);
+        auto_pad_number((int)section[i].sh_entsize, "%x", SECTION_PAD, 1);
         char *flag = flag_selector(section[i].sh_flags);
         auto_pad(flag, SECTION_PAD);
-        auto_pad_number((int)section[i].sh_link, SECTION_PAD);
-        auto_pad_number((int)section[i].sh_info, SECTION_PAD);
-        auto_pad_number((int)section[i].sh_addralign, SECTION_PAD);
+        auto_pad_number((int)section[i].sh_link, "%d", SECTION_PAD, 0);
+        auto_pad_number((int)section[i].sh_info, "%d", SECTION_PAD, 0);
+        auto_pad_number((int)section[i].sh_addralign, "%x", SECTION_PAD, 0);
 
         free(flag);
         putchar('\n');
@@ -265,7 +265,6 @@ int main(int argc, char **argv)
         puts("Usage: ./simple-readelf <filename>");
         return 1;
     }
-
     // Copy content file inside a buffer
     char *buffer = open_wrapper(argv[1]);
 
@@ -282,10 +281,12 @@ int main(int argc, char **argv)
     // Assign global variable for sections header names
     str_sections_name = buffer + str_section_name_s.sh_offset;
 
-    // Pretty print header
+    // Pretty print ELF header
     pretty_print_header(elf_header);
     putchar('\n');
+    // Pretty print sections headers
     pretty_print_section_header(sections_header, nb_sections, &s_info);
+    // Free buffer memory
     free(buffer);
 
     return 0;
