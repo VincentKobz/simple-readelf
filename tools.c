@@ -37,6 +37,10 @@ void auto_pad_number(int number, const char *format, size_t target_length, int i
 // Write on stdout the string and pad it with spaces to respect the target total length
 void auto_pad(const char *string, size_t target_length)
 {
+    if (!string)
+    {
+        string = "";
+    }
     size_t i = 0;
     for (i = 0; i < strlen(string) && i < target_length - 1; i++)
     {

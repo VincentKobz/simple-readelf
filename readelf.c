@@ -73,7 +73,7 @@ static char *pretty_print_header_type(int type)
 }
 
 // Return the correct char that corresponds to the flag
-static char *flag_selector(uint64_t flag)
+static char *section_flag_selector(uint64_t flag)
 {
     char *res = calloc(17, sizeof(char));
 
@@ -133,6 +133,40 @@ static char *flag_selector(uint64_t flag)
     return res;
 }
 
+// Return the correct char that corresponds to the flag
+static char *program_flag_selector(uint64_t flag)
+{
+    char *res = calloc(17, sizeof(char));
+
+    if (!res)
+    {
+        err(1, "Error during calloc !");
+    }
+
+    size_t index = 0;
+
+    for (size_t i = 0; i < 16; i++)
+    {
+        uint64_t mask = 1 << i;
+        uint64_t flag_mask = flag & mask;
+        switch(flag_mask)
+        {
+            case PF_R:
+                res[index++] = 'R';
+                break;
+            case PF_W:
+                res[index++] = 'W';
+                break;
+            case PF_X:
+                res[index++] = 'E';
+                break;
+            default:
+                break;
+        }
+    }
+    return res;
+}
+
 // Pretty print header indent
 static void printer_indent(const char *title, const char *format, ...)
 {
@@ -177,6 +211,7 @@ void pretty_print_header(ElfW(Ehdr) *header)
     printer_indent("Section header string table index:", "%d", header->e_shstrndx);
 }
 
+// Pretty print for sections headers
 void pretty_print_section_header(ElfW(Shdr) *section, size_t number, section_info *section_info)
 {
     if (str_sections_name == NULL)
@@ -208,7 +243,7 @@ void pretty_print_section_header(ElfW(Shdr) *section, size_t number, section_inf
         auto_pad_number((int)section[i].sh_offset, "%x", SECTION_PAD, 1);
         auto_pad_number((int)section[i].sh_size, "%x", SECTION_PAD, 1);
         auto_pad_number((int)section[i].sh_entsize, "%x", SECTION_PAD, 1);
-        char *flag = flag_selector(section[i].sh_flags);
+        char *flag = section_flag_selector(section[i].sh_flags);
         auto_pad(flag, SECTION_PAD);
         auto_pad_number((int)section[i].sh_link, "%d", SECTION_PAD, 0);
         auto_pad_number((int)section[i].sh_info, "%d", SECTION_PAD, 0);
@@ -217,6 +252,35 @@ void pretty_print_section_header(ElfW(Shdr) *section, size_t number, section_inf
         free(flag);
         putchar('\n');
     }
+    puts(flag_section_keyword_infos);
+}
+
+// Pretty print for program headers
+void pretty_print_program_header(ElfW(Phdr) *programs, size_t number)
+{
+    puts("Program Headers:");
+    for (size_t i = 0; i < 8; i++)
+    {
+        auto_pad(program_attribute[i], SECTION_PAD);
+    }
+    putchar('\n');
+
+    for (size_t i = 0; i < number; i++)
+    {
+        auto_pad(xlat_get(p_type, programs[i].p_type), SECTION_PAD);
+        auto_pad_number((int)programs[i].p_offset, "%x", SECTION_PAD, 1);
+        auto_pad_number((int)programs[i].p_vaddr, "%x", SECTION_PAD, 1);
+        auto_pad_number((int)programs[i].p_paddr, "%x", SECTION_PAD, 1);
+        auto_pad_number((int)programs[i].p_filesz, "%x", SECTION_PAD, 1);
+        auto_pad_number((int)programs[i].p_memsz, "%x", SECTION_PAD, 1);
+        char *flag = program_flag_selector(programs[i].p_flags);
+        auto_pad(flag, SECTION_PAD);
+        auto_pad_number((int)programs[i].p_align, "%x", SECTION_PAD, 0);
+
+        free(flag);
+        putchar('\n');
+    }
+    puts(flag_program_keyword_infos);
 }
 
 // Process input file
@@ -272,6 +336,8 @@ int main(int argc, char **argv)
     ElfW(Ehdr) *elf_header = (ElfW(Ehdr) *)buffer;
     // Get sections header with the buffer address
     ElfW(Shdr) *sections_header = (ElfW(Shdr *))(buffer + elf_header->e_shoff);
+    // Get program header with the buffer address
+    ElfW(Phdr) *program_header = (ElfW(Phdr) *)(buffer + elf_header->e_ehsize);
     // Get the section that hosts the section header names
     ElfW(Shdr) str_section_name_s = sections_header[elf_header->e_shstrndx];
 
@@ -286,6 +352,9 @@ int main(int argc, char **argv)
     putchar('\n');
     // Pretty print sections headers
     pretty_print_section_header(sections_header, nb_sections, &s_info);
+    putchar('\n');
+    // Pretty print program headers
+    pretty_print_program_header(program_header, elf_header->e_phnum);
     // Free buffer memory
     free(buffer);
 

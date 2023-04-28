@@ -10,9 +10,12 @@
 #define NB_INDENT 35
 #define SECTION_PAD 18
 
-// Functions declaration
+// Global variables declaration
 char *str_sections_name = NULL;
-const char *section_attribute[10] = {"Name", "Type", "Address", "Offset", "Size", "EntSize", "Flags", "Links", "Info", "Align"};
+static const char *section_attribute[10] = {"Name", "Type", "Address", "Offset", "Size", "EntSize", "Flags", "Links", "Info", "Align"};
+static const char *program_attribute[8] = {"Type", "Offset", "VirtAddr", "PhysAddr", "FileSiz", "MemSiz", "Flags", "Align"};
+static const char *flag_section_keyword_infos = "\nKey to FLAGS:\nW [Write] - A [Alloc] - X [Execute] - M [Merge]\nS [Strings] - I [Infos] - L [Link order]\nO [Extra OS processing required] - G [Group]\nT [TLS] - E [Exclude] - C [Compressed]";
+static const char *flag_program_keyword_infos = "\nKey to FLAGS:\nR [READ] - W [Write] - X [Execute]";
 
 // Structures declaration
 typedef struct {
@@ -67,24 +70,31 @@ xlat sh_type[] = {
         XLAT(SHT_GNU_HASH),
         XLAT(SHT_GNU_versym),
         XLAT(SHT_GNU_verneed),
+        XLAT(SHT_PREINIT_ARRAY),
         XLAT(SHT_INIT_ARRAY),
         XLAT(SHT_FINI_ARRAY),
         XLAT_END
 };
 
-xlat sh_flags[] = {
-        XLAT(SHF_WRITE),
-        XLAT(SHF_ALLOC),
-        XLAT(SHF_EXECINSTR),
-        XLAT(SHF_MERGE),
-        XLAT(SHF_STRINGS),
-        XLAT(SHF_INFO_LINK),
-        XLAT(SHF_LINK_ORDER),
-        XLAT(SHF_OS_NONCONFORMING),
-        XLAT(SHF_GROUP),
-        XLAT(SHF_TLS),
-        XLAT(SHF_EXCLUDE),
-        XLAT(SHF_COMPRESSED),
+xlat p_type[] =
+{
+        XLAT(PT_NULL),
+        XLAT(PT_LOAD),
+        XLAT(PT_DYNAMIC),
+        XLAT(PT_INTERP),
+        XLAT(PT_NOTE),
+        XLAT(PT_SHLIB),
+        XLAT(PT_PHDR),
+        XLAT(PT_LOSUNW),
+        XLAT(PT_SUNWBSS),
+        XLAT(PT_SUNWSTACK),
+        XLAT(PT_HISUNW),
+        XLAT(PT_LOPROC),
+        XLAT(PT_HIPROC),
+        XLAT(PT_GNU_RELRO),
+        XLAT(PT_GNU_STACK),
+        XLAT(PT_GNU_EH_FRAME),
+        XLAT_END
 };
 
 #endif //READELF_H
