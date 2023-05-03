@@ -293,15 +293,23 @@ void pretty_print_program_header(ElfW(Phdr) *programs, size_t number)
     puts(flag_program_keyword_infos);
 }
 
-// Pretty print for dynamic symbol table
-void pretty_print_dynamic_symbol(ElfW(Sym) *dyn_symbol, size_t number)
+// Pretty print for symbol table
+void pretty_print_symbol(ElfW(Sym) *symbol, size_t number, SYMBOL type)
 {
-    if (dynamic_symbol_name == NULL)
+    if (!dynamic_symbol_name || !symbol_name)
     {
-        err(1, "Cannot get dynamic symbol names !");
+        err(1, "Cannot get symbol names !");
     }
 
-    printf("Symbol table '.symtab' contains %lu entries:\n\n", number);
+    if (type == STATIC)
+    {
+        printf("Symbol table '.symtab' contains %lu entries:\n\n", number);
+    }
+    else
+    {
+        printf("Symbol table '.dynsym' contains %lu entries:\n\n", number);
+    }
+
     for (size_t i = 0; i < 8; i++)
     {
         auto_pad(dynamic_symbol_attribute[i], SECTION_PAD);
@@ -310,21 +318,23 @@ void pretty_print_dynamic_symbol(ElfW(Sym) *dyn_symbol, size_t number)
     for (size_t i = 0; i < number; i++)
     {
         auto_pad_number((int)i, "%i", SECTION_PAD, 0);
-        auto_pad_number((int)dyn_symbol[i].st_value, "%i", SECTION_PAD, 1);
-        auto_pad_number((int)dyn_symbol[i].st_size, "%i", SECTION_PAD, 0);
-        auto_pad(xlat_get(dyn_sym_type, ELF64_ST_TYPE(dyn_symbol[i].st_info)), SECTION_PAD);
-        auto_pad(xlat_get(dyn_sym_bind, ELF64_ST_BIND(dyn_symbol[i].st_info)), SECTION_PAD);
-        auto_pad(xlat_get(dyn_sym_vis, ELF64_ST_VISIBILITY(dyn_symbol[i].st_other)), SECTION_PAD);
-        const char *index_value = xlat_get(dyn_sym_index, dyn_symbol[i].st_shndx);
+        auto_pad_number((int)symbol[i].st_value, "%i", SECTION_PAD, 1);
+        auto_pad_number((int)symbol[i].st_size, "%i", SECTION_PAD, 0);
+        auto_pad(xlat_get(dyn_sym_type, ELF64_ST_TYPE(symbol[i].st_info)), SECTION_PAD);
+        auto_pad(xlat_get(dyn_sym_bind, ELF64_ST_BIND(symbol[i].st_info)), SECTION_PAD);
+        auto_pad(xlat_get(dyn_sym_vis, ELF64_ST_VISIBILITY(symbol[i].st_other)), SECTION_PAD);
+        const char *index_value = xlat_get(dyn_sym_index, symbol[i].st_shndx);
         if (index_value)
         {
             auto_pad(index_value, SECTION_PAD);
         }
         else
         {
-            auto_pad_number((int)dyn_symbol[i].st_shndx, "%i", SECTION_PAD, 0);
+            auto_pad_number((int)symbol[i].st_shndx, "%i", SECTION_PAD, 0);
         }
-        auto_pad(&dynamic_symbol_name[dyn_symbol[i].st_name], SECTION_PAD);
+
+        const char *name = type == STATIC ? &symbol_name[symbol[i].st_name] : &dynamic_symbol_name[symbol[i].st_name];
+        auto_pad(name, SECTION_PAD);
         putchar('\n');
     }
 }
@@ -402,12 +412,17 @@ int main(int argc, char **argv)
     pretty_print_program_header(program_header, elf_header->e_phnum);
     // Get the dynamic symbol table
     ElfW(Sym) *dynamic_symbol = (ElfW(Sym) *)(buffer + s_info.dynamic_symbol->sh_offset);
+    ElfW(Sym) *symbol = (ElfW(Sym) *)(buffer + s_info.symbol->sh_offset);
     dynamic_symbol_name = buffer + s_info.str_dynamic_symbol_off;
     symbol_name = buffer + s_info.str_symbol_off;
     size_t number_dynamic_symbol = s_info.dynamic_symbol->sh_size / sizeof(ElfW(Sym));
+    size_t number_symbol = s_info.symbol->sh_size / sizeof(ElfW(Sym));
     putchar('\n');
     // Pretty print dynamic symbol table
-    pretty_print_dynamic_symbol(dynamic_symbol, number_dynamic_symbol);
+    pretty_print_symbol(dynamic_symbol, number_dynamic_symbol, DYNAMIC);
+    putchar('\n');
+    // Pretty print symbol table
+    pretty_print_symbol(symbol, number_symbol, STATIC);
 
     // Free buffer memory
     free(buffer);

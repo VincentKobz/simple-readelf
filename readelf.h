@@ -20,6 +20,13 @@ static const char *dynamic_symbol_attribute[8] = {"Num", "Value", "Size", "Type"
 static const char *flag_section_keyword_infos = "\nKey to FLAGS:\nW [Write] - A [Alloc] - X [Execute] - M [Merge]\nS [Strings] - I [Infos] - L [Link order]\nO [Extra OS processing required] - G [Group]\nT [TLS] - E [Exclude] - C [Compressed]";
 static const char *flag_program_keyword_infos = "\nKey to FLAGS:\nR [READ] - W [Write] - X [Execute]";
 
+// Enum declaration
+typedef enum
+{
+    STATIC,
+    DYNAMIC
+} SYMBOL;
+
 // Structures declaration
 typedef struct {
     ElfW(Shdr) *dynamic_symbol;
