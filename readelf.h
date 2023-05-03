@@ -12,8 +12,11 @@
 
 // Global variables declaration
 char *str_sections_name = NULL;
+char *dynamic_symbol_name = NULL;
+char *symbol_name = NULL;
 static const char *section_attribute[10] = {"Name", "Type", "Address", "Offset", "Size", "EntSize", "Flags", "Links", "Info", "Align"};
 static const char *program_attribute[8] = {"Type", "Offset", "VirtAddr", "PhysAddr", "FileSiz", "MemSiz", "Flags", "Align"};
+static const char *dynamic_symbol_attribute[8] = {"Num", "Value", "Size", "Type", "Bind", "Vis", "Ndx", "Name"};
 static const char *flag_section_keyword_infos = "\nKey to FLAGS:\nW [Write] - A [Alloc] - X [Execute] - M [Merge]\nS [Strings] - I [Infos] - L [Link order]\nO [Extra OS processing required] - G [Group]\nT [TLS] - E [Exclude] - C [Compressed]";
 static const char *flag_program_keyword_infos = "\nKey to FLAGS:\nR [READ] - W [Write] - X [Execute]";
 
@@ -21,6 +24,8 @@ static const char *flag_program_keyword_infos = "\nKey to FLAGS:\nR [READ] - W [
 typedef struct {
     ElfW(Shdr) *dynamic_symbol;
     ElfW(Shdr) *symbol;
+    size_t str_dynamic_symbol_off;
+    size_t str_symbol_off;
 } section_info;
 
 typedef struct {
@@ -94,6 +99,54 @@ xlat p_type[] =
         XLAT(PT_GNU_RELRO),
         XLAT(PT_GNU_STACK),
         XLAT(PT_GNU_EH_FRAME),
+        XLAT_END
+};
+
+xlat dyn_sym_type[] =
+{
+        XLAT(STT_NOTYPE),
+        XLAT(STT_OBJECT),
+        XLAT(STT_FUNC),
+        XLAT(STT_SECTION),
+        XLAT(STT_FILE),
+        XLAT(STT_COMMON),
+        XLAT(STT_TLS),
+        XLAT(STT_LOOS),
+        XLAT(STT_HIOS),
+        XLAT(STT_LOPROC),
+        XLAT(STT_SPARC_REGISTER),
+        XLAT(STT_HIPROC),
+        XLAT_END
+};
+
+xlat dyn_sym_bind[] =
+{
+        XLAT(STB_LOCAL),
+        XLAT(STB_GLOBAL),
+        XLAT(STB_WEAK),
+        XLAT(STB_LOOS),
+        XLAT(STB_HIOS),
+        XLAT(STB_LOPROC),
+        XLAT(STB_HIPROC),
+        XLAT_END
+};
+
+xlat dyn_sym_vis[] =
+{
+        XLAT(STV_DEFAULT),
+        XLAT(STV_INTERNAL),
+        XLAT(STV_HIDDEN),
+        XLAT(STV_PROTECTED),
+        XLAT_END
+};
+
+xlat dyn_sym_index[] = {
+        XLAT(SHN_UNDEF),
+        XLAT(SHN_LORESERVE),
+        XLAT(SHN_LOPROC),
+        XLAT(SHN_ABS),
+        XLAT(SHN_COMMON),
+        XLAT(SHN_HIRESERVE),
         XLAT_END
 };
 
