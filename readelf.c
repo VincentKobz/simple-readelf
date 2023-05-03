@@ -222,7 +222,7 @@ void pretty_print_section_header(ElfW(Shdr) *section, size_t number, section_inf
     puts("Sections Headers:");
     for (size_t i = 0; i < 10; i++)
     {
-        auto_pad(section_attribute[i], SECTION_PAD);
+        auto_pad(section_attribute[i], PRINT_PAD);
     }
     putchar('\n');
 
@@ -247,17 +247,17 @@ void pretty_print_section_header(ElfW(Shdr) *section, size_t number, section_inf
             section_info->str_symbol_off = section[i].sh_offset;
         }
 
-        auto_pad(name, SECTION_PAD);
-        auto_pad(xlat_get(sh_type, section[i].sh_type), SECTION_PAD);
-        auto_pad_number((int)section[i].sh_addr, "%x", SECTION_PAD, 1);
-        auto_pad_number((int)section[i].sh_offset, "%x", SECTION_PAD, 1);
-        auto_pad_number((int)section[i].sh_size, "%x", SECTION_PAD, 1);
-        auto_pad_number((int)section[i].sh_entsize, "%x", SECTION_PAD, 1);
+        auto_pad(name, PRINT_PAD);
+        auto_pad(xlat_get(sh_type, section[i].sh_type), PRINT_PAD);
+        auto_pad_number((int)section[i].sh_addr, "%x", PRINT_PAD, 1);
+        auto_pad_number((int)section[i].sh_offset, "%x", PRINT_PAD, 1);
+        auto_pad_number((int)section[i].sh_size, "%x", PRINT_PAD, 1);
+        auto_pad_number((int)section[i].sh_entsize, "%x", PRINT_PAD, 1);
         char *flag = section_flag_selector(section[i].sh_flags);
-        auto_pad(flag, SECTION_PAD);
-        auto_pad_number((int)section[i].sh_link, "%d", SECTION_PAD, 0);
-        auto_pad_number((int)section[i].sh_info, "%d", SECTION_PAD, 0);
-        auto_pad_number((int)section[i].sh_addralign, "%x", SECTION_PAD, 0);
+        auto_pad(flag, PRINT_PAD);
+        auto_pad_number((int)section[i].sh_link, "%d", PRINT_PAD, 0);
+        auto_pad_number((int)section[i].sh_info, "%d", PRINT_PAD, 0);
+        auto_pad_number((int)section[i].sh_addralign, "%x", PRINT_PAD, 0);
 
         free(flag);
         putchar('\n');
@@ -271,21 +271,21 @@ void pretty_print_program_header(ElfW(Phdr) *programs, size_t number)
     puts("Program Headers:");
     for (size_t i = 0; i < 8; i++)
     {
-        auto_pad(program_attribute[i], SECTION_PAD);
+        auto_pad(program_attribute[i], PRINT_PAD);
     }
     putchar('\n');
 
     for (size_t i = 0; i < number; i++)
     {
-        auto_pad(xlat_get(p_type, programs[i].p_type), SECTION_PAD);
-        auto_pad_number((int)programs[i].p_offset, "%x", SECTION_PAD, 1);
-        auto_pad_number((int)programs[i].p_vaddr, "%x", SECTION_PAD, 1);
-        auto_pad_number((int)programs[i].p_paddr, "%x", SECTION_PAD, 1);
-        auto_pad_number((int)programs[i].p_filesz, "%x", SECTION_PAD, 1);
-        auto_pad_number((int)programs[i].p_memsz, "%x", SECTION_PAD, 1);
+        auto_pad(xlat_get(p_type, programs[i].p_type), PRINT_PAD);
+        auto_pad_number((int)programs[i].p_offset, "%x", PRINT_PAD, 1);
+        auto_pad_number((int)programs[i].p_vaddr, "%x", PRINT_PAD, 1);
+        auto_pad_number((int)programs[i].p_paddr, "%x", PRINT_PAD, 1);
+        auto_pad_number((int)programs[i].p_filesz, "%x", PRINT_PAD, 1);
+        auto_pad_number((int)programs[i].p_memsz, "%x", PRINT_PAD, 1);
         char *flag = program_flag_selector(programs[i].p_flags);
-        auto_pad(flag, SECTION_PAD);
-        auto_pad_number((int)programs[i].p_align, "%x", SECTION_PAD, 0);
+        auto_pad(flag, PRINT_PAD);
+        auto_pad_number((int)programs[i].p_align, "%x", PRINT_PAD, 0);
 
         free(flag);
         putchar('\n');
@@ -312,29 +312,29 @@ void pretty_print_symbol(ElfW(Sym) *symbol, size_t number, SYMBOL type)
 
     for (size_t i = 0; i < 8; i++)
     {
-        auto_pad(dynamic_symbol_attribute[i], SECTION_PAD);
+        auto_pad(dynamic_symbol_attribute[i], PRINT_PAD);
     }
     putchar('\n');
     for (size_t i = 0; i < number; i++)
     {
-        auto_pad_number((int)i, "%i", SECTION_PAD, 0);
-        auto_pad_number((int)symbol[i].st_value, "%i", SECTION_PAD, 1);
-        auto_pad_number((int)symbol[i].st_size, "%i", SECTION_PAD, 0);
-        auto_pad(xlat_get(dyn_sym_type, ELF64_ST_TYPE(symbol[i].st_info)), SECTION_PAD);
-        auto_pad(xlat_get(dyn_sym_bind, ELF64_ST_BIND(symbol[i].st_info)), SECTION_PAD);
-        auto_pad(xlat_get(dyn_sym_vis, ELF64_ST_VISIBILITY(symbol[i].st_other)), SECTION_PAD);
+        auto_pad_number((int)i, "%i", PRINT_PAD, 0);
+        auto_pad_number((int)symbol[i].st_value, "%i", PRINT_PAD, 1);
+        auto_pad_number((int)symbol[i].st_size, "%i", PRINT_PAD, 0);
+        auto_pad(xlat_get(dyn_sym_type, ELF64_ST_TYPE(symbol[i].st_info)), PRINT_PAD);
+        auto_pad(xlat_get(dyn_sym_bind, ELF64_ST_BIND(symbol[i].st_info)), PRINT_PAD);
+        auto_pad(xlat_get(dyn_sym_vis, ELF64_ST_VISIBILITY(symbol[i].st_other)), PRINT_PAD);
         const char *index_value = xlat_get(dyn_sym_index, symbol[i].st_shndx);
         if (index_value)
         {
-            auto_pad(index_value, SECTION_PAD);
+            auto_pad(index_value, PRINT_PAD);
         }
         else
         {
-            auto_pad_number((int)symbol[i].st_shndx, "%i", SECTION_PAD, 0);
+            auto_pad_number((int)symbol[i].st_shndx, "%i", PRINT_PAD, 0);
         }
 
         const char *name = type == STATIC ? &symbol_name[symbol[i].st_name] : &dynamic_symbol_name[symbol[i].st_name];
-        auto_pad(name, SECTION_PAD);
+        auto_pad(name, PRINT_PAD);
         putchar('\n');
     }
 }

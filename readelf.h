@@ -8,7 +8,7 @@
 #define XLAT_END {0, 0}
 #define INDENT "  "
 #define NB_INDENT 35
-#define SECTION_PAD 18
+#define PRINT_PAD 18
 
 // Global variables declaration
 char *str_sections_name = NULL;
