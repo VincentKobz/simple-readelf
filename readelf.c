@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <err.h>
 #include <stdarg.h>
+#include <getopt.h>
 #include "readelf.h"
 #include "tools.h"
 
@@ -209,6 +210,7 @@ void pretty_print_header(ElfW(Ehdr) *header)
     printer_indent("Size of section headers:", "%d (bytes)", header->e_shentsize);
     printer_indent("Number of section headers:", "%d", header->e_shnum);
     printer_indent("Section header string table index:", "%d", header->e_shstrndx);
+    putchar('\n');
 }
 
 // Pretty print for sections headers
@@ -219,12 +221,15 @@ void pretty_print_section_header(ElfW(Shdr) *section, size_t number, section_inf
         err(1, "Cannot get sections names !");
     }
 
-    puts("Sections Headers:");
-    for (size_t i = 0; i < 10; i++)
+    if (options == ALL || options == SECTION_HEADER)
     {
-        auto_pad(section_attribute[i], SECTION_PAD);
+        puts("Sections Headers:");
+        for (size_t i = 0; i < 10; i++)
+        {
+            auto_pad(section_attribute[i], PRINT_PAD);
+        }
+        putchar('\n');
     }
-    putchar('\n');
 
     for (size_t i = 0; i < number; i++)
     {
@@ -237,22 +242,38 @@ void pretty_print_section_header(ElfW(Shdr) *section, size_t number, section_inf
         {
             section_info->dynamic_symbol = &section[i];
         }
-        auto_pad(name, SECTION_PAD);
-        auto_pad(xlat_get(sh_type, section[i].sh_type), SECTION_PAD);
-        auto_pad_number((int)section[i].sh_addr, "%x", SECTION_PAD, 1);
-        auto_pad_number((int)section[i].sh_offset, "%x", SECTION_PAD, 1);
-        auto_pad_number((int)section[i].sh_size, "%x", SECTION_PAD, 1);
-        auto_pad_number((int)section[i].sh_entsize, "%x", SECTION_PAD, 1);
-        char *flag = section_flag_selector(section[i].sh_flags);
-        auto_pad(flag, SECTION_PAD);
-        auto_pad_number((int)section[i].sh_link, "%d", SECTION_PAD, 0);
-        auto_pad_number((int)section[i].sh_info, "%d", SECTION_PAD, 0);
-        auto_pad_number((int)section[i].sh_addralign, "%x", SECTION_PAD, 0);
 
-        free(flag);
-        putchar('\n');
+        if (strcmp(name, ".dynstr") == 0)
+        {
+            section_info->str_dynamic_symbol_off = section[i].sh_offset;
+        }
+        if (strcmp(name, ".strtab") == 0)
+        {
+            section_info->str_symbol_off = section[i].sh_offset;
+        }
+
+        if (options == ALL || options == SECTION_HEADER)
+        {
+            auto_pad(name, PRINT_PAD);
+            auto_pad(xlat_get(sh_type, section[i].sh_type), PRINT_PAD);
+            auto_pad_number((int) section[i].sh_addr, "%x", PRINT_PAD, 1);
+            auto_pad_number((int) section[i].sh_offset, "%x", PRINT_PAD, 1);
+            auto_pad_number((int) section[i].sh_size, "%x", PRINT_PAD, 1);
+            auto_pad_number((int) section[i].sh_entsize, "%x", PRINT_PAD, 1);
+            char *flag = section_flag_selector(section[i].sh_flags);
+            auto_pad(flag, PRINT_PAD);
+            auto_pad_number((int) section[i].sh_link, "%d", PRINT_PAD, 0);
+            auto_pad_number((int) section[i].sh_info, "%d", PRINT_PAD, 0);
+            auto_pad_number((int) section[i].sh_addralign, "%x", PRINT_PAD, 0);
+
+            free(flag);
+            putchar('\n');
+        }
     }
-    puts(flag_section_keyword_infos);
+    if (options == ALL || options == SECTION_HEADER)
+    {
+        puts(flag_section_keyword_infos);
+    }
 }
 
 // Pretty print for program headers
@@ -261,26 +282,74 @@ void pretty_print_program_header(ElfW(Phdr) *programs, size_t number)
     puts("Program Headers:");
     for (size_t i = 0; i < 8; i++)
     {
-        auto_pad(program_attribute[i], SECTION_PAD);
+        auto_pad(program_attribute[i], PRINT_PAD);
     }
     putchar('\n');
 
     for (size_t i = 0; i < number; i++)
     {
-        auto_pad(xlat_get(p_type, programs[i].p_type), SECTION_PAD);
-        auto_pad_number((int)programs[i].p_offset, "%x", SECTION_PAD, 1);
-        auto_pad_number((int)programs[i].p_vaddr, "%x", SECTION_PAD, 1);
-        auto_pad_number((int)programs[i].p_paddr, "%x", SECTION_PAD, 1);
-        auto_pad_number((int)programs[i].p_filesz, "%x", SECTION_PAD, 1);
-        auto_pad_number((int)programs[i].p_memsz, "%x", SECTION_PAD, 1);
+        auto_pad(xlat_get(p_type, programs[i].p_type), PRINT_PAD);
+        auto_pad_number((int)programs[i].p_offset, "%x", PRINT_PAD, 1);
+        auto_pad_number((int)programs[i].p_vaddr, "%x", PRINT_PAD, 1);
+        auto_pad_number((int)programs[i].p_paddr, "%x", PRINT_PAD, 1);
+        auto_pad_number((int)programs[i].p_filesz, "%x", PRINT_PAD, 1);
+        auto_pad_number((int)programs[i].p_memsz, "%x", PRINT_PAD, 1);
         char *flag = program_flag_selector(programs[i].p_flags);
-        auto_pad(flag, SECTION_PAD);
-        auto_pad_number((int)programs[i].p_align, "%x", SECTION_PAD, 0);
+        auto_pad(flag, PRINT_PAD);
+        auto_pad_number((int)programs[i].p_align, "%x", PRINT_PAD, 0);
 
         free(flag);
         putchar('\n');
     }
     puts(flag_program_keyword_infos);
+    putchar('\n');
+}
+
+// Pretty print for symbol table
+void pretty_print_symbol(ElfW(Sym) *symbol, size_t number, SYMBOL type)
+{
+    if (!dynamic_symbol_name || !symbol_name)
+    {
+        err(1, "Cannot get symbol names !");
+    }
+
+    if (type == STATIC)
+    {
+        printf("Symbol table '.symtab' contains %lu entries:\n\n", number);
+    }
+    else
+    {
+        printf("Symbol table '.dynsym' contains %lu entries:\n\n", number);
+    }
+
+    for (size_t i = 0; i < 8; i++)
+    {
+        auto_pad(dynamic_symbol_attribute[i], PRINT_PAD);
+    }
+    putchar('\n');
+    for (size_t i = 0; i < number; i++)
+    {
+        auto_pad_number((int)i, "%i", PRINT_PAD, 0);
+        auto_pad_number((int)symbol[i].st_value, "%i", PRINT_PAD, 1);
+        auto_pad_number((int)symbol[i].st_size, "%i", PRINT_PAD, 0);
+        auto_pad(xlat_get(dyn_sym_type, ELF64_ST_TYPE(symbol[i].st_info)), PRINT_PAD);
+        auto_pad(xlat_get(dyn_sym_bind, ELF64_ST_BIND(symbol[i].st_info)), PRINT_PAD);
+        auto_pad(xlat_get(dyn_sym_vis, ELF64_ST_VISIBILITY(symbol[i].st_other)), PRINT_PAD);
+        const char *index_value = xlat_get(dyn_sym_index, symbol[i].st_shndx);
+        if (index_value)
+        {
+            auto_pad(index_value, PRINT_PAD);
+        }
+        else
+        {
+            auto_pad_number((int)symbol[i].st_shndx, "%i", PRINT_PAD, 0);
+        }
+
+        const char *name = type == STATIC ? &symbol_name[symbol[i].st_name] : &dynamic_symbol_name[symbol[i].st_name];
+        auto_pad(name, PRINT_PAD);
+        putchar('\n');
+    }
+    putchar('\n');
 }
 
 // Process input file
@@ -320,17 +389,52 @@ char *open_wrapper(char *filename)
     return buffer;
 }
 
+static char *parse_options(int argc, char **argv)
+{
+    char *filename = NULL;
+    int opt = 0;
+    while ((opt = getopt(argc, argv, "a:h:P:S:s:d:")) != -1)
+    {
+        switch (opt)
+        {
+            case 'a':
+                options = ALL;
+                filename = optarg;
+                break;
+            case 'h':
+                options = HEADER;
+                filename = optarg;
+                break;
+            case 'P':
+                options = PROGRAM_HEADER;
+                filename = optarg;
+                break;
+            case 'S':
+                options = SECTION_HEADER;
+                filename = optarg;
+                break;
+            case 's':
+                options = STATIC_SYMBOL;
+                filename = optarg;
+                break;
+            case 'd':
+                options = DYNAMIC_SYMBOL;
+                filename = optarg;
+                break;
+            default:
+                errx(1, "Usage: ./simple-readelf <filename>");
+        }
+    }
+    return filename;
+}
+
 // Main function
 int main(int argc, char **argv)
 {
-    // Check function number of argument
-    if (argc != 2)
-    {
-        puts("Usage: ./simple-readelf <filename>");
-        return 1;
-    }
+    // Parse command line options
+    char *filename = parse_options(argc, argv);
     // Copy content file inside a buffer
-    char *buffer = open_wrapper(argv[1]);
+    char *buffer = open_wrapper(filename);
 
     // Get the elf header with the buffer address
     ElfW(Ehdr) *elf_header = (ElfW(Ehdr) *)buffer;
@@ -346,15 +450,39 @@ int main(int argc, char **argv)
 
     // Assign global variable for sections header names
     str_sections_name = buffer + str_section_name_s.sh_offset;
-
     // Pretty print ELF header
-    pretty_print_header(elf_header);
-    putchar('\n');
+    if (options == ALL || options == HEADER)
+    {
+        pretty_print_header(elf_header);
+    }
     // Pretty print sections headers
-    pretty_print_section_header(sections_header, nb_sections, &s_info);
-    putchar('\n');
+    if (options != PROGRAM_HEADER)
+    {
+        pretty_print_section_header(sections_header, nb_sections, &s_info);
+        putchar('\n');
+    }
     // Pretty print program headers
-    pretty_print_program_header(program_header, elf_header->e_phnum);
+    if (options == ALL || options == PROGRAM_HEADER)
+    {
+        pretty_print_program_header(program_header, elf_header->e_phnum);
+    }
+    // Get the dynamic symbol table
+    ElfW(Sym) *dynamic_symbol = (ElfW(Sym) *)(buffer + s_info.dynamic_symbol->sh_offset);
+    ElfW(Sym) *symbol = (ElfW(Sym) *)(buffer + s_info.symbol->sh_offset);
+    dynamic_symbol_name = buffer + s_info.str_dynamic_symbol_off;
+    symbol_name = buffer + s_info.str_symbol_off;
+    size_t number_dynamic_symbol = s_info.dynamic_symbol->sh_size / sizeof(ElfW(Sym));
+    size_t number_symbol = s_info.symbol->sh_size / sizeof(ElfW(Sym));
+    // Pretty print dynamic symbol table
+    if (options == ALL || options == DYNAMIC_SYMBOL)
+    {
+        pretty_print_symbol(dynamic_symbol, number_dynamic_symbol, DYNAMIC);
+    }
+    // Pretty print symbol table
+    if (options == ALL || options == STATIC_SYMBOL)
+    {
+        pretty_print_symbol(symbol, number_symbol, STATIC);
+    }
     // Free buffer memory
     free(buffer);
 
