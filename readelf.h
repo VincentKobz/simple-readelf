@@ -27,6 +27,18 @@ typedef enum
     DYNAMIC
 } SYMBOL;
 
+typedef enum
+{
+    ALL,
+    HEADER,
+    SECTION_HEADER,
+    PROGRAM_HEADER,
+    STATIC_SYMBOL,
+    DYNAMIC_SYMBOL
+} OPTIONS;
+
+OPTIONS options = 0;
+
 // Structures declaration
 typedef struct {
     ElfW(Shdr) *dynamic_symbol;
