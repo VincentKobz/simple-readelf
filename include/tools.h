@@ -1,7 +1,7 @@
 #ifndef SIMPLE_READELF_TOOLS_H
 #define SIMPLE_READELF_TOOLS_H
-#include <stdio.h>
 #include <elf.h>
+#include <stdio.h>
 
 // Macros
 #define INDENT "  "
@@ -18,4 +18,4 @@ char *pretty_print_header_osabi(int os_abi);
 char *section_flag_selector(uint64_t flag);
 char *program_flag_selector(uint64_t flag);
 
-#endif //SIMPLE_READELF_TOOLS_H
+#endif//SIMPLE_READELF_TOOLS_H
