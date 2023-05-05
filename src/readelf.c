@@ -4,11 +4,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <err.h>
-#include <stdarg.h>
 #include <getopt.h>
 #include "readelf.h"
 #include "tools.h"
-
 
 // Find correct name parameter in xlat
 const char *xlat_get(xlat *xlat_arr, size_t val)
@@ -21,169 +19,8 @@ const char *xlat_get(xlat *xlat_arr, size_t val)
     return NULL;
 }
 
-// Pretty print for magic number
-void pretty_print_magic(unsigned char *string)
-{
-    for (size_t i = 0; i < EI_NIDENT; i++)
-    {
-        printf ("%2.2x ", string[i]);
-    }
-    puts("");
-}
-
-// Pretty print for elf head for data encoding
-static char *pretty_print_header_data(int data)
-{
-    if (data == ELFDATA2LSB)
-        return "2's complement, little-endian";
-    else if (data == ELFDATA2MSB)
-        return "2's complement, big-endian";
-    else
-        return "none";
-}
-
-// Pretty print for elf header OS ABI
-static char *pretty_print_header_osabi(int os_abi)
-{
-    switch (os_abi)
-    {
-        case ELFOSABI_SYSV: return "UNIX System V ABI";
-        case ELFOSABI_HPUX: return "HP-UX ABI";
-        case ELFOSABI_NETBSD: return "NetBSD ABI";
-        case ELFOSABI_LINUX: return "Linux ABI";
-        case ELFOSABI_SOLARIS: return "Solaris ABI";
-        case ELFOSABI_IRIX: return "IRIX ABI";
-        case ELFOSABI_FREEBSD: return "FreeBSD ABI";
-        case ELFOSABI_TRU64: return "TRU64 UNIX ABI";
-        case ELFOSABI_ARM: return "ARM architecture ABI";
-        default: return "Stand-alone (embedded) ABI";
-    }
-}
-
-// Pretty print for object file type
-static char *pretty_print_header_type(int type)
-{
-    switch (type)
-    {
-        case ET_NONE: return "NONE (none)";
-        case ET_REL: return "REL (Relocatable file)";
-        case ET_EXEC: return "EXEC (Executable file)";
-        case ET_DYN: return "DYN (Shared object file)";
-        default: return "CORE (Core file)";
-    }
-}
-
-// Return the correct char that corresponds to the flag
-static char *section_flag_selector(uint64_t flag)
-{
-    char *res = calloc(17, sizeof(char));
-
-    if (!res)
-    {
-        err(1, "Error during calloc !");
-    }
-
-    size_t index = 0;
-
-    for (size_t i = 0; i < 16; i++)
-    {
-        uint64_t mask = 1 << i;
-        uint64_t flag_mask = flag & mask;
-        switch(flag_mask)
-        {
-            case SHF_WRITE:
-                res[index++] = 'W';
-                break;
-            case SHF_ALLOC:
-                res[index++] = 'A';
-                break;
-            case SHF_EXECINSTR:
-                res[index++] = 'X';
-                break;
-            case SHF_MERGE:
-                res[index++] = 'M';
-                break;
-            case SHF_STRINGS:
-                res[index++] = 'S';
-                break;
-            case SHF_INFO_LINK:
-                res[index++] = 'I';
-                break;
-            case SHF_LINK_ORDER:
-                res[index++] = 'L';
-                break;
-            case SHF_OS_NONCONFORMING:
-                res[index++] = 'O';
-                break;
-            case SHF_GROUP:
-                res[index++] = 'G';
-                break;
-            case SHF_TLS:
-                res[index++] = 'T';
-                break;
-            case SHF_EXCLUDE:
-                res[index++] = 'E';
-                break;
-            case SHF_COMPRESSED:
-                res[index++] = 'C';
-                break;
-            default:
-                break;
-        }
-    }
-    return res;
-}
-
-// Return the correct char that corresponds to the flag
-static char *program_flag_selector(uint64_t flag)
-{
-    char *res = calloc(17, sizeof(char));
-
-    if (!res)
-    {
-        err(1, "Error during calloc !");
-    }
-
-    size_t index = 0;
-
-    for (size_t i = 0; i < 16; i++)
-    {
-        uint64_t mask = 1 << i;
-        uint64_t flag_mask = flag & mask;
-        switch(flag_mask)
-        {
-            case PF_R:
-                res[index++] = 'R';
-                break;
-            case PF_W:
-                res[index++] = 'W';
-                break;
-            case PF_X:
-                res[index++] = 'E';
-                break;
-            default:
-                break;
-        }
-    }
-    return res;
-}
-
-// Pretty print header indent
-static void printer_indent(const char *title, const char *format, ...)
-{
-    char string[128] = {0};
-    va_list args;
-    va_start(args, format);
-
-    printf(INDENT);
-    auto_pad(title, NB_INDENT);
-
-    vsprintf(string, format, args);
-    puts(string);
-}
-
 // Pretty print ELF header
-void pretty_print_header(ElfW(Ehdr) *header)
+static void pretty_print_header(ElfW(Ehdr) *header)
 {
     // Header title
     puts("ELF Header:");
@@ -214,7 +51,7 @@ void pretty_print_header(ElfW(Ehdr) *header)
 }
 
 // Pretty print for sections headers
-void pretty_print_section_header(ElfW(Shdr) *section, size_t number, section_info *section_info)
+static void pretty_print_section_header(ElfW(Shdr) *section, size_t number, section_info *section_info)
 {
     if (str_sections_name == NULL)
     {
@@ -277,7 +114,7 @@ void pretty_print_section_header(ElfW(Shdr) *section, size_t number, section_inf
 }
 
 // Pretty print for program headers
-void pretty_print_program_header(ElfW(Phdr) *programs, size_t number)
+static void pretty_print_program_header(ElfW(Phdr) *programs, size_t number)
 {
     puts("Program Headers:");
     for (size_t i = 0; i < 8; i++)
@@ -306,7 +143,7 @@ void pretty_print_program_header(ElfW(Phdr) *programs, size_t number)
 }
 
 // Pretty print for symbol table
-void pretty_print_symbol(ElfW(Sym) *symbol, size_t number, SYMBOL type)
+static void pretty_print_symbol(ElfW(Sym) *symbol, size_t number, SYMBOL type)
 {
     if (!dynamic_symbol_name || !symbol_name)
     {
@@ -353,7 +190,7 @@ void pretty_print_symbol(ElfW(Sym) *symbol, size_t number, SYMBOL type)
 }
 
 // Process input file
-char *open_wrapper(char *filename)
+static char *open_wrapper(char *filename)
 {
     size_t buffer_size = 1000;
     size_t counter = 0;
@@ -392,7 +229,7 @@ char *open_wrapper(char *filename)
 static char *parse_options(int argc, char **argv)
 {
     char *filename = NULL;
-    int opt = 0;
+    int opt;
     while ((opt = getopt(argc, argv, "a:h:P:S:s:d:")) != -1)
     {
         switch (opt)
@@ -422,8 +259,12 @@ static char *parse_options(int argc, char **argv)
                 filename = optarg;
                 break;
             default:
-                errx(1, "Usage: ./simple-readelf <filename>");
+                errx(1, "Usage: ./simple-readelf [-a -h -P -S -s -d] <filename>");
         }
+    }
+    if (optind != 3)
+    {
+        errx(1, "Usage: ./simple-readelf [-a -h -P -S -s -d] <filename>");
     }
     return filename;
 }

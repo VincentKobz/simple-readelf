@@ -6,8 +6,6 @@
 // Macros
 #define XLAT(val) {(size_t)(val), #val}
 #define XLAT_END {0, 0}
-#define INDENT "  "
-#define NB_INDENT 35
 #define PRINT_PAD 18
 
 // Global variables declaration
