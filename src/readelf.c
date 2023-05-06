@@ -206,6 +206,7 @@ static char *open_wrapper(char *filename) {
         if (feof(file))
             break;
     }
+    fclose(file);
     return buffer;
 }
 
