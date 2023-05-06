@@ -49,6 +49,12 @@ static void pretty_print_header(ElfW(Ehdr) * header) {
 
 // Pretty print for sections headers
 static void pretty_print_section_header(ElfW(Shdr) * section, size_t number, section_info *section_info) {
+    // Check presence of program headers
+    if (number == 0) {
+        printf("%s\n", no_section_headers);
+        return;
+    }
+
     if (str_sections_name == NULL) {
         err(1, "Cannot get sections names !");
     }
@@ -95,11 +101,17 @@ static void pretty_print_section_header(ElfW(Shdr) * section, size_t number, sec
     }
     if (options == ALL || options == SECTION_HEADER) {
         puts(flag_section_keyword_infos);
+        putchar('\n');
     }
 }
 
 // Pretty print for program headers
 static void pretty_print_program_header(ElfW(Phdr) * programs, size_t number) {
+    // Check presence of program headers
+    if (number == 0) {
+        printf("%s\n", no_program_headers);
+        return;
+    }
     puts("Program Headers:");
     for (size_t i = 0; i < 8; i++) {
         auto_pad(program_attribute[i], PRINT_PAD);
@@ -126,7 +138,10 @@ static void pretty_print_program_header(ElfW(Phdr) * programs, size_t number) {
 
 // Pretty print for symbol table
 static void pretty_print_symbol(ElfW(Sym) * symbol, size_t number, SYMBOL type) {
-    if (!dynamic_symbol_name || !symbol_name) {
+    if (type == DYNAMIC && !dynamic_symbol_name) {
+        err(1, "Cannot get dynamic symbol names !");
+    }
+    if (type == STATIC && !symbol_name) {
         err(1, "Cannot get symbol names !");
     }
 
@@ -250,37 +265,49 @@ int main(int argc, char **argv) {
     ElfW(Shdr) str_section_name_s = sections_header[elf_header->e_shstrndx];
 
     size_t nb_sections = elf_header->e_shnum;
-    section_info s_info;
+    section_info s_info = {.symbol = NULL, .dynamic_symbol = NULL, .str_symbol_off = 0, .str_dynamic_symbol_off = 0};
 
-    // Assign global variable for sections header names
-    str_sections_name = buffer + str_section_name_s.sh_offset;
     // Pretty print ELF header
     if (options == ALL || options == HEADER) {
         pretty_print_header(elf_header);
     }
     // Pretty print sections headers
     if (options != PROGRAM_HEADER) {
+        // Assign global variable for sections header names
+        str_sections_name = buffer + str_section_name_s.sh_offset;
         pretty_print_section_header(sections_header, nb_sections, &s_info);
-        putchar('\n');
     }
     // Pretty print program headers
     if (options == ALL || options == PROGRAM_HEADER) {
         pretty_print_program_header(program_header, elf_header->e_phnum);
     }
-    // Get the dynamic symbol table
-    ElfW(Sym) *dynamic_symbol = (ElfW(Sym) *) (buffer + s_info.dynamic_symbol->sh_offset);
-    ElfW(Sym) *symbol = (ElfW(Sym) *) (buffer + s_info.symbol->sh_offset);
-    dynamic_symbol_name = buffer + s_info.str_dynamic_symbol_off;
-    symbol_name = buffer + s_info.str_symbol_off;
-    size_t number_dynamic_symbol = s_info.dynamic_symbol->sh_size / sizeof(ElfW(Sym));
-    size_t number_symbol = s_info.symbol->sh_size / sizeof(ElfW(Sym));
     // Pretty print dynamic symbol table
     if (options == ALL || options == DYNAMIC_SYMBOL) {
-        pretty_print_symbol(dynamic_symbol, number_dynamic_symbol, DYNAMIC);
+        if (s_info.dynamic_symbol) {
+            size_t number_dynamic_symbol = s_info.dynamic_symbol->sh_size / sizeof(ElfW(Sym));
+            dynamic_symbol_name = buffer + s_info.str_dynamic_symbol_off;
+
+            // Get the dynamic symbol table
+            ElfW(Sym) *dynamic_symbol = (ElfW(Sym) *) (buffer + s_info.dynamic_symbol->sh_offset);
+
+            pretty_print_symbol(dynamic_symbol, number_dynamic_symbol, DYNAMIC);
+        } else {
+            printf("%s\n", no_dynamic_section);
+        }
     }
     // Pretty print symbol table
     if (options == ALL || options == STATIC_SYMBOL) {
-        pretty_print_symbol(symbol, number_symbol, STATIC);
+        if (s_info.symbol) {
+            size_t number_symbol = s_info.symbol->sh_size / sizeof(ElfW(Sym));
+            symbol_name = buffer + s_info.str_symbol_off;
+
+            // Get the symbol table
+            ElfW(Sym) *symbol = (ElfW(Sym) *) (buffer + s_info.symbol->sh_offset);
+
+            pretty_print_symbol(symbol, number_symbol, STATIC);
+        } else {
+            printf("%s\n", no_symbol_section);
+        }
     }
     // Free buffer memory
     free(buffer);

@@ -21,6 +21,10 @@ static const char *program_attribute[8] = {"Type", "Offset", "VirtAddr", "PhysAd
 static const char *dynamic_symbol_attribute[8] = {"Num", "Value", "Size", "Type", "Bind", "Vis", "Ndx", "Name"};
 static const char *flag_section_keyword_infos = "\nKey to FLAGS:\nW [Write] - A [Alloc] - X [Execute] - M [Merge]\nS [Strings] - I [Infos] - L [Link order]\nO [Extra OS processing required] - G [Group]\nT [TLS] - E [Exclude] - C [Compressed]";
 static const char *flag_program_keyword_infos = "\nKey to FLAGS:\nR [READ] - W [Write] - X [Execute]";
+static const char *no_program_headers = "There are no program headers in this file.";
+static const char *no_section_headers = "There are no section headers in this file.";
+static const char *no_symbol_section = "There is no symbol section in this file.";
+static const char *no_dynamic_section = "There is no dynamic section in this file.";
 
 // Enum declaration
 typedef enum {
