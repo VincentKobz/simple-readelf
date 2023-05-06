@@ -1,7 +1,7 @@
 CC=gcc
-CFLAGS= -Wall -std=c99 -pedantic -Wextra -Werror -fsanitize=address -g
+CFLAGS= -Wall -std=c99 -pedantic -Wextra -Werror -fsanitize=address -g -Iinclude
 
-OBJS=readelf.o tools.o
+OBJS=$(patsubst %.c,%.o,$(wildcard src/*.c))
 TARGET=simple-readelf
 
 all: $(TARGET)
