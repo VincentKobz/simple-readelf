@@ -56,7 +56,7 @@ static void pretty_print_section_header(ElfW(Shdr) * section, size_t number, sec
     }
 
     if (str_sections_name == NULL) {
-        err(1, "Cannot get sections names !");
+        errx(1, "Cannot get sections names !");
     }
 
     if (options == ALL || options == SECTION_HEADER) {
@@ -139,10 +139,10 @@ static void pretty_print_program_header(ElfW(Phdr) * programs, size_t number) {
 // Pretty print for symbol table
 static void pretty_print_symbol(ElfW(Sym) * symbol, size_t number, SYMBOL type) {
     if (type == DYNAMIC && !dynamic_symbol_name) {
-        err(1, "Cannot get dynamic symbol names !");
+        errx(1, "Cannot get dynamic symbol names !");
     }
     if (type == STATIC && !symbol_name) {
-        err(1, "Cannot get symbol names !");
+        errx(1, "Cannot get symbol names !");
     }
 
     if (type == STATIC) {
@@ -183,12 +183,12 @@ static char *open_wrapper(char *filename) {
     char *buffer = calloc(1000, sizeof(char));
 
     if (!buffer)
-        err(1, "Cannot malloc buffer !");
+        errx(1, "Cannot malloc buffer !");
 
     FILE *file = fopen(filename, "r");
 
     if (!file)
-        err(1, "Cannot open file !");
+        errx(1, "Cannot open file !");
 
     for (;;) {
         if (counter == buffer_size - 1) {
@@ -197,7 +197,7 @@ static char *open_wrapper(char *filename) {
 
             if (!new_buffer) {
                 free(buffer);
-                err(1, "Cannot realloc buffer !");
+                errx(1, "Cannot realloc buffer !");
             }
             buffer = new_buffer;
         }

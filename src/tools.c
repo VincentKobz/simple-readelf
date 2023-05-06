@@ -8,7 +8,7 @@ void auto_pad_number(int number, const char *format, size_t target_length, int i
     char number_str[16] = {0};
     // Convert input string to right number format
     if (sprintf(number_str, format, number) < 0) {
-        err(1, "Error during convert number to string !");
+        errx(1, "Error during convert number to string !");
     }
 
     if (is_address) {
@@ -124,7 +124,7 @@ char *section_flag_selector(uint64_t flag) {
     char *res = calloc(17, sizeof(char));
 
     if (!res) {
-        err(1, "Error during calloc !");
+        errx(1, "Error during calloc !");
     }
 
     size_t index = 0;
@@ -181,7 +181,7 @@ char *program_flag_selector(uint64_t flag) {
     char *res = calloc(17, sizeof(char));
 
     if (!res) {
-        err(1, "Error during calloc !");
+        errx(1, "Error during calloc !");
     }
 
     size_t index = 0;
