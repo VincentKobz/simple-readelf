@@ -44,7 +44,6 @@ static void pretty_print_header(ElfW(Ehdr) * header) {
     printer_indent("Size of section headers:", "%d (bytes)", header->e_shentsize);
     printer_indent("Number of section headers:", "%d", header->e_shnum);
     printer_indent("Section header string table index:", "%d", header->e_shstrndx);
-    putchar('\n');
 }
 
 // Pretty print for sections headers
@@ -56,10 +55,15 @@ static void pretty_print_section_header(ElfW(Shdr) * section, size_t number, sec
     }
 
     if (str_sections_name == NULL) {
+        if (options == ALL)
+            putchar('\n');
         errx(1, "Cannot get sections names !");
     }
 
     if (options == ALL || options == SECTION_HEADER) {
+        if (options == ALL)
+            putchar('\n');
+
         puts("Sections Headers:");
         for (size_t i = 0; i < 10; i++) {
             auto_pad(section_attribute[i], PRINT_PAD);
@@ -101,7 +105,6 @@ static void pretty_print_section_header(ElfW(Shdr) * section, size_t number, sec
     }
     if (options == ALL || options == SECTION_HEADER) {
         puts(flag_section_keyword_infos);
-        putchar('\n');
     }
 }
 
@@ -109,9 +112,15 @@ static void pretty_print_section_header(ElfW(Shdr) * section, size_t number, sec
 static void pretty_print_program_header(ElfW(Phdr) * programs, size_t number) {
     // Check presence of program headers
     if (number == 0) {
+        if (options == ALL)
+            putchar('\n');
         printf("%s\n", no_program_headers);
         return;
     }
+
+    if (options != PROGRAM_HEADER)
+        putchar('\n');
+
     puts("Program Headers:");
     for (size_t i = 0; i < 8; i++) {
         auto_pad(program_attribute[i], PRINT_PAD);
@@ -133,7 +142,6 @@ static void pretty_print_program_header(ElfW(Phdr) * programs, size_t number) {
         putchar('\n');
     }
     puts(flag_program_keyword_infos);
-    putchar('\n');
 }
 
 // Pretty print for symbol table
@@ -145,10 +153,13 @@ static void pretty_print_symbol(ElfW(Sym) * symbol, size_t number, SYMBOL type) 
         errx(1, "Cannot get symbol names !");
     }
 
+    if (options == ALL)
+        putchar('\n');
+
     if (type == STATIC) {
-        printf("Symbol table '.symtab' contains %lu entries:\n\n", number);
+        printf("Symbol table '.symtab' contains %lu entries:\n", number);
     } else {
-        printf("Symbol table '.dynsym' contains %lu entries:\n\n", number);
+        printf("Symbol table '.dynsym' contains %lu entries:\n", number);
     }
 
     for (size_t i = 0; i < 8; i++) {
@@ -173,7 +184,6 @@ static void pretty_print_symbol(ElfW(Sym) * symbol, size_t number, SYMBOL type) 
         auto_pad(name, PRINT_PAD);
         putchar('\n');
     }
-    putchar('\n');
 }
 
 // Process input file
@@ -293,6 +303,8 @@ int main(int argc, char **argv) {
 
             pretty_print_symbol(dynamic_symbol, number_dynamic_symbol, DYNAMIC);
         } else {
+            if (options == ALL)
+                putchar('\n');
             printf("%s\n", no_dynamic_section);
         }
     }
@@ -307,6 +319,8 @@ int main(int argc, char **argv) {
 
             pretty_print_symbol(symbol, number_symbol, STATIC);
         } else {
+            if (options == ALL)
+                putchar('\n');
             printf("%s\n", no_symbol_section);
         }
     }
