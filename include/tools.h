@@ -1,6 +1,7 @@
 #ifndef SIMPLE_READELF_TOOLS_H
 #define SIMPLE_READELF_TOOLS_H
 #include <elf.h>
+#include <link.h>
 #include <stdio.h>
 
 // Macros
@@ -17,5 +18,6 @@ char *pretty_print_header_type(int type);
 char *pretty_print_header_osabi(int os_abi);
 char *section_flag_selector(uint64_t flag);
 char *program_flag_selector(uint64_t flag);
+ElfW(Shdr) *add_relocatable_section(ElfW(Shdr) * array, ElfW(Shdr) relocatable_section);
 
 #endif//SIMPLE_READELF_TOOLS_H

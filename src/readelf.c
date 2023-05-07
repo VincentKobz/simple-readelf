@@ -3,7 +3,6 @@
 #include <elf.h>
 #include <err.h>
 #include <getopt.h>
-#include <link.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -84,6 +83,10 @@ static void pretty_print_section_header(ElfW(Shdr) * section, size_t number, sec
         }
         if (strcmp(name, ".strtab") == 0) {
             section_info->str_symbol_off = section[i].sh_offset;
+        }
+
+        if (section[i].sh_type == SHT_RELA) {
+            relocatable_sections = add_relocatable_section(relocatable_sections, section[i]);
         }
 
         if (options == ALL || options == SECTION_HEADER) {
@@ -325,6 +328,7 @@ int main(int argc, char **argv) {
         }
     }
     // Free buffer memory
+    free(relocatable_sections);
     free(buffer);
 
     return 0;

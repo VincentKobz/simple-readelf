@@ -16,6 +16,7 @@
 char *str_sections_name = NULL;
 char *dynamic_symbol_name = NULL;
 char *symbol_name = NULL;
+ElfW(Shdr) *relocatable_sections = NULL;
 static const char *section_attribute[10] = {"Name", "Type", "Address", "Offset", "Size", "EntSize", "Flags", "Links", "Info", "Align"};
 static const char *program_attribute[8] = {"Type", "Offset", "VirtAddr", "PhysAddr", "FileSiz", "MemSiz", "Flags", "Align"};
 static const char *dynamic_symbol_attribute[8] = {"Num", "Value", "Size", "Type", "Bind", "Vis", "Ndx", "Name"};

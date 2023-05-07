@@ -205,3 +205,30 @@ char *program_flag_selector(uint64_t flag) {
     }
     return res;
 }
+
+ElfW(Shdr) *add_relocatable_section(ElfW(Shdr) * array, ElfW(Shdr) relocatable_section) {
+    static size_t nb_relocatable_section = 0;
+    static size_t max_relocatable_section = 0;
+
+    if (!array) {
+        array = calloc(10, sizeof(ElfW(Shdr)));
+        max_relocatable_section = 10;
+        if (!array) {
+            errx(1, "Error during calloc array of relocatable sections !");
+        }
+    }
+
+    if (nb_relocatable_section == max_relocatable_section) {
+        max_relocatable_section *= 2;
+        ElfW(Shdr) *new_array = realloc(array, max_relocatable_section);
+
+        if (!new_array) {
+            free(array);
+            errx(1, "Cannot realloc array of relocatable sections !");
+        }
+        array = new_array;
+    }
+    array[nb_relocatable_section++] = relocatable_section;
+
+    return array;
+}
