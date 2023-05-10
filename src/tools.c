@@ -4,7 +4,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-void auto_pad_number(int number, const char *format, size_t target_length, int is_address) {
+size_t nb_relocatable_section = 0;
+size_t max_relocatable_section = 0;
+
+void auto_pad_number(long number, const char *format, size_t target_length, int is_address) {
     char number_str[16] = {0};
     // Convert input string to right number format
     if (sprintf(number_str, format, number) < 0) {
@@ -206,9 +209,7 @@ char *program_flag_selector(uint64_t flag) {
     return res;
 }
 
-ElfW(Shdr) *add_relocatable_section(ElfW(Shdr) * array, ElfW(Shdr) relocatable_section) {
-    static size_t nb_relocatable_section = 0;
-    static size_t max_relocatable_section = 0;
+ElfW(Shdr) * add_relocatable_section(ElfW(Shdr) * array, ElfW(Shdr) relocatable_section) {
 
     if (!array) {
         array = calloc(10, sizeof(ElfW(Shdr)));

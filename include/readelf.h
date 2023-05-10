@@ -20,6 +20,7 @@ ElfW(Shdr) *relocatable_sections = NULL;
 static const char *section_attribute[10] = {"Name", "Type", "Address", "Offset", "Size", "EntSize", "Flags", "Links", "Info", "Align"};
 static const char *program_attribute[8] = {"Type", "Offset", "VirtAddr", "PhysAddr", "FileSiz", "MemSiz", "Flags", "Align"};
 static const char *dynamic_symbol_attribute[8] = {"Num", "Value", "Size", "Type", "Bind", "Vis", "Ndx", "Name"};
+static const char *relocatable_attribute[5] = {"Offset", "Info", "Type", "Sym. Value", "Sym .Name + Addend"};
 static const char *flag_section_keyword_infos = "\nKey to FLAGS:\nW [Write] - A [Alloc] - X [Execute] - M [Merge]\nS [Strings] - I [Infos] - L [Link order]\nO [Extra OS processing required] - G [Group]\nT [TLS] - E [Exclude] - C [Compressed]";
 static const char *flag_program_keyword_infos = "\nKey to FLAGS:\nR [READ] - W [Write] - X [Execute]";
 static const char *no_program_headers = "There are no program headers in this file.";
@@ -39,7 +40,8 @@ typedef enum {
     SECTION_HEADER,
     PROGRAM_HEADER,
     STATIC_SYMBOL,
-    DYNAMIC_SYMBOL
+    DYNAMIC_SYMBOL,
+    RELOCATABLE
 } OPTIONS;
 
 OPTIONS options = 0;

@@ -262,6 +262,25 @@ static char *parse_options(int argc, char **argv) {
     return filename;
 }
 
+void pretty_print_relocatable(ElfW(Rela) * relocatable, ElfW(Sym) * link_symbol, size_t number) {
+    for (size_t i = 0; i < 5; i++) {
+        auto_pad(relocatable_attribute[i], PRINT_PAD);
+    }
+    putchar('\n');
+    for (size_t i = 0; i < number; i++) {
+        auto_pad_number((int) relocatable[i].r_offset, "%x", PRINT_PAD, 1);
+        size_t sym = ELF64_R_SYM(relocatable[i].r_info);
+        size_t type = ELF64_R_TYPE(relocatable[i].r_info);
+        auto_pad_number(ELF64_R_INFO(sym, type), "%zx", PRINT_PAD, 1);
+        auto_pad_number((long) type, "%x", PRINT_PAD, 1);
+        auto_pad_number((long) sym, "%x", PRINT_PAD, 1);
+        ElfW(Sym) *symbol = &link_symbol[sym];
+        char *symbol_str = &symbol_name[symbol->st_name];
+        auto_pad(symbol_str, PRINT_PAD);
+        putchar('\n');
+    }
+}
+
 // Main function
 int main(int argc, char **argv) {
     // Parse command line options
@@ -325,6 +344,18 @@ int main(int argc, char **argv) {
             if (options == ALL)
                 putchar('\n');
             printf("%s\n", no_symbol_section);
+        }
+    }
+
+    if (options == ALL || options == RELOCATABLE) {
+        for (size_t i = 0; i < nb_relocatable_section; i++) {
+            char *section_name = &str_sections_name[relocatable_sections[i].sh_name];
+            ElfW(Off) offset = relocatable_sections[i].sh_offset;
+            size_t nb_relocatable = relocatable_sections[i].sh_size / sizeof(ElfW(Rela));
+            printf("Relocation section '%s' at offset 0x%lx contains %lu entries:\n", section_name, offset, nb_relocatable);
+            ElfW(Shdr) *link_section = &sections_header[relocatable_sections[i].sh_link];
+            ElfW(Sym) *link_symbol = (ElfW(Sym) *) (buffer + link_section->sh_offset);
+            pretty_print_relocatable((ElfW(Rela) *) (buffer + relocatable_sections[i].sh_offset), link_symbol, nb_relocatable);
         }
     }
     // Free buffer memory
