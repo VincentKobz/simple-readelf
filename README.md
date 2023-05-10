@@ -1,6 +1,6 @@
 # SIMPLE-READELF
 
-A simple readelf program that allows to do basic things in order to analyse and display informations about ELF files.
+A simple readelf program that does basic things to analyse and display information about ELF files.
 
 ## Get Started
 
@@ -33,7 +33,7 @@ $ ./simple-readelf -s <elf_file>
 ```
 - Display dynamic sections
 ```shell
-$ ./simple-readelf -s <elf_file>
+$ ./simple-readelf -d <elf_file>
 ```
 - Display all
 ```shell
