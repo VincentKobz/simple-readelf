@@ -1,6 +1,7 @@
 #ifndef READELF_H
 #define READELF_H
 
+#include "opt_parsing.h"
 #include <elf.h>
 #include <link.h>
 #include <stddef.h>
@@ -32,14 +33,6 @@ typedef enum {
     DYNAMIC
 } SYMBOL;
 
-typedef enum {
-    ALL,
-    HEADER,
-    SECTION_HEADER,
-    PROGRAM_HEADER,
-    STATIC_SYMBOL,
-    DYNAMIC_SYMBOL
-} OPTIONS;
 
 OPTIONS options = 0;
 

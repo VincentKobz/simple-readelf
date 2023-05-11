@@ -1,5 +1,5 @@
-#ifndef SIMPLE_READELF_TOOLS_H
-#define SIMPLE_READELF_TOOLS_H
+#ifndef SIMPLE_READELF_UTILS_H
+#define SIMPLE_READELF_UTILS_H
 #include <elf.h>
 #include <stdio.h>
 
@@ -18,4 +18,4 @@ char *pretty_print_header_osabi(int os_abi);
 char *section_flag_selector(uint64_t flag);
 char *program_flag_selector(uint64_t flag);
 
-#endif//SIMPLE_READELF_TOOLS_H
+#endif//SIMPLE_READELF_UTILS_H

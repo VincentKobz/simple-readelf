@@ -1,8 +1,7 @@
 #include "readelf.h"
-#include "tools.h"
+#include "utils.h"
 #include <elf.h>
 #include <err.h>
-#include <getopt.h>
 #include <link.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -220,49 +219,11 @@ static char *open_wrapper(char *filename) {
     return buffer;
 }
 
-static char *parse_options(int argc, char **argv) {
-    char *filename = NULL;
-    int opt;
-    while ((opt = getopt(argc, argv, "a:h:P:S:s:d:")) != -1) {
-        switch (opt) {
-            case 'a':
-                options = ALL;
-                filename = optarg;
-                break;
-            case 'h':
-                options = HEADER;
-                filename = optarg;
-                break;
-            case 'P':
-                options = PROGRAM_HEADER;
-                filename = optarg;
-                break;
-            case 'S':
-                options = SECTION_HEADER;
-                filename = optarg;
-                break;
-            case 's':
-                options = STATIC_SYMBOL;
-                filename = optarg;
-                break;
-            case 'd':
-                options = DYNAMIC_SYMBOL;
-                filename = optarg;
-                break;
-            default:
-                errx(1, "Usage: ./simple-readelf [-a -h -P -S -s -d] <filename>");
-        }
-    }
-    if (optind != 3) {
-        errx(1, "Usage: ./simple-readelf [-a -h -P -S -s -d] <filename>");
-    }
-    return filename;
-}
 
 // Main function
 int main(int argc, char **argv) {
     // Parse command line options
-    char *filename = parse_options(argc, argv);
+    char *filename = parse_options(argc, argv, &options);
     // Copy content file inside a buffer
     char *buffer = open_wrapper(filename);
 
