@@ -7,7 +7,7 @@
 void auto_pad_number(int number, const char *format, size_t target_length, int is_address) {
     char number_str[16] = {0};
     // Convert input string to right number format
-    if (sprintf(number_str, format, number) < 0) {
+    if (snprintf(number_str, sizeof(number_str), format, number) < 0) {
         errx(1, "Error during convert number to string !");
     }
 
