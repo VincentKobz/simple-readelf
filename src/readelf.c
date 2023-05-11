@@ -64,7 +64,7 @@ static void pretty_print_section_header(ElfW(Shdr) * section, size_t number, sec
             putchar('\n');
 
         puts("Sections Headers:");
-        for (size_t i = 0; i < 10; i++) {
+        for (size_t i = 0; i < ARRAY_SIZE(section_attribute); i++) {
             auto_pad(section_attribute[i], PRINT_PAD);
         }
         putchar('\n');
@@ -121,7 +121,7 @@ static void pretty_print_program_header(ElfW(Phdr) * programs, size_t number) {
         putchar('\n');
 
     puts("Program Headers:");
-    for (size_t i = 0; i < 8; i++) {
+    for (size_t i = 0; i < ARRAY_SIZE(program_attribute); i++) {
         auto_pad(program_attribute[i], PRINT_PAD);
     }
     putchar('\n');
@@ -161,7 +161,7 @@ static void pretty_print_symbol(ElfW(Sym) * symbol, size_t number, SYMBOL type) 
         printf("Symbol table '.dynsym' contains %lu entries:\n", number);
     }
 
-    for (size_t i = 0; i < 8; i++) {
+    for (size_t i = 0; i < ARRAY_SIZE(dynamic_symbol_attribute); i++) {
         auto_pad(dynamic_symbol_attribute[i], PRINT_PAD);
     }
     putchar('\n');

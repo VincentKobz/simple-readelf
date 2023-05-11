@@ -12,6 +12,8 @@
 #define XLAT_END \
     { 0, 0 }
 #define PRINT_PAD 18
+#define ARRAY_SIZE(array) \
+    (sizeof(array) / sizeof(*array))
 
 // Global variables declaration
 char *str_sections_name = NULL;
