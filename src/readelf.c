@@ -192,7 +192,7 @@ static char *open_wrapper(char *filename) {
     char *buffer = calloc(1000, sizeof(char));
 
     if (!buffer)
-        errx(1, "Cannot malloc buffer !");
+        errx(1, "Cannot calloc buffer !");
 
     FILE *file = fopen(filename, "r");
 
